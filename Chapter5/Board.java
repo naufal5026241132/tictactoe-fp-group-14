@@ -1,9 +1,5 @@
 package Chapter5;
 
-import Chapter4.Cell;
-import Chapter4.Seed;
-import Chapter4.State;
-
 import java.awt.*;
 /**
  * The Board class models the ROWS-by-COLS game board.
@@ -13,8 +9,8 @@ public class Board {
     public static final int ROWS = 3;  // ROWS x COLS cells
     public static final int COLS = 3;
     // Define named constants for drawing
-    public static final int CANVAS_WIDTH = Chapter4.Cell.SIZE * COLS;  // the drawing canvas
-    public static final int CANVAS_HEIGHT = Chapter4.Cell.SIZE * ROWS;
+    public static final int CANVAS_WIDTH = Cell.SIZE * COLS;  // the drawing canvas
+    public static final int CANVAS_HEIGHT = Cell.SIZE * ROWS;
     public static final int GRID_WIDTH = 8;  // Grid-line's width
     public static final int GRID_WIDTH_HALF = GRID_WIDTH / 2; // Grid-line's half-width
     public static final Color COLOR_GRID = Color.LIGHT_GRAY;  // grid lines
@@ -22,7 +18,7 @@ public class Board {
 
     // Define properties (package-visible)
     /** Composes of 2D array of ROWS-by-COLS Cell instances */
-    Chapter4.Cell[][] cells;
+    Cell[][] cells;
 
     /** Constructor to initialize the game board */
     public Board() {
@@ -31,11 +27,11 @@ public class Board {
 
     /** Initialize the game objects (run once) */
     public void initGame() {
-        cells = new Chapter4.Cell[ROWS][COLS]; // allocate the array
+        cells = new Cell[ROWS][COLS]; // allocate the array
         for (int row = 0; row < ROWS; ++row) {
             for (int col = 0; col < COLS; ++col) {
                 // Allocate element of the array
-                cells[row][col] = new Chapter4.Cell(row, col);
+                cells[row][col] = new Cell(row, col);
                 // Cells are initialized in the constructor
             }
         }
@@ -55,7 +51,7 @@ public class Board {
      *  Update cells[selectedRow][selectedCol]. Compute and return the
      *  new game state (PLAYING, DRAW, CROSS_WON, NOUGHT_WON).
      */
-    public Chapter4.State stepGame(Chapter4.Seed player, int selectedRow, int selectedCol) {
+    public State stepGame(Seed player, int selectedRow, int selectedCol) {
         // Update game board
         cells[selectedRow][selectedCol].content = player;
 
@@ -74,13 +70,13 @@ public class Board {
                 && cells[0][2].content == player
                 && cells[1][1].content == player
                 && cells[2][0].content == player) {
-            return (player == Chapter4.Seed.CROSS) ? Chapter4.State.CROSS_WON : Chapter4.State.NOUGHT_WON;
+            return (player == Seed.CROSS) ? State.CROSS_WON : State.NOUGHT_WON;
         } else {
             // Nobody win. Check for DRAW (all cells occupied) or PLAYING.
             for (int row = 0; row < ROWS; ++row) {
                 for (int col = 0; col < COLS; ++col) {
                     if (cells[row][col].content == Seed.NO_SEED) {
-                        return Chapter4.State.PLAYING; // still have empty cells
+                        return State.PLAYING; // still have empty cells
                     }
                 }
             }
@@ -93,7 +89,7 @@ public class Board {
         // Draw the grid-lines
         g.setColor(COLOR_GRID);
         for (int row = 1; row < ROWS; ++row) {
-            g.fillRoundRect(0, Chapter4.Cell.SIZE * row - GRID_WIDTH_HALF,
+            g.fillRoundRect(0, Cell.SIZE * row - GRID_WIDTH_HALF,
                     CANVAS_WIDTH - 1, GRID_WIDTH,
                     GRID_WIDTH, GRID_WIDTH);
         }
