@@ -3,6 +3,9 @@ package Chapter5;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.io.IOException;
+import java.net.URL;
+import javax.sound.sampled.*;
 
 /**
  * Tic-Tac-Toe: Two-player Graphic version with better OO design.
@@ -27,7 +30,7 @@ public class GameMain extends JPanel {
 
     /** Constructor to setup the UI and game components */
     public GameMain() {
-        // Pre-load all sound effects
+        // Pre-load all sound effects (if needed, uncomment SoundEffect.init() after fixing its implementation)
         // SoundEffect.init(); // This line is not strictly needed if the enum constructor handles loading
 
         // This JPanel fires MouseEvent
@@ -131,13 +134,9 @@ public class GameMain extends JPanel {
         // Run GUI construction codes in Event-Dispatching thread for thread safety
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                JFrame frame = new JFrame(TITLE);
-                // Set the content-pane of the JFrame to an instance of main JPanel
-                frame.setContentPane(new GameMain());
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.pack();
-                frame.setLocationRelativeTo(null); // center the application window
-                frame.setVisible(true);            // show it
+                // Launch the welcome screen first
+                new WelcomeScreen().setVisible(true);
+                // The GameMain JFrame will be launched from the WelcomeScreen's button action
             }
         });
     }
