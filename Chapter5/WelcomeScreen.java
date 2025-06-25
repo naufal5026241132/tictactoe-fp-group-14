@@ -13,7 +13,7 @@ import java.io.IOException; // Added import for IOException
 /**
  * The WelcomeScreen class displays the welcome screen for the Tic-Tac-Toe game.
  * It appears before the main game starts, allowing game mode selection
- * with an animated GIF background and background audio. (Player name input removed)
+ * with an animated GIF background and background audio.
  */
 public class WelcomeScreen extends JFrame {
     private static final long serialVersionUID = 1L;
@@ -31,16 +31,6 @@ public class WelcomeScreen extends JFrame {
     private JButton pvPModeButton;
     private JButton pvCModeButton;
     private GameMode selectedGameMode; // To track the currently selected mode
-
-    // Player name input fields (REMOVED)
-    // private JTextField player1NameField;
-    // private JTextField player2NameField;
-    // private JTextField userNameField;
-
-    // Panels to hold player name inputs based on mode (REMOVED)
-    // private JPanel dynamicInputPanel;
-    // private JPanel pvPNamesPanel;
-    // private JPanel pvCNamesPanel;
 
     // Background image and audio
     private Image backgroundImage;
@@ -125,7 +115,7 @@ public class WelcomeScreen extends JFrame {
 
 
         // Panel to hold messageLabel and modeSelectionPanel
-        JPanel centerContentPanel = new JPanel(); // Renamed from headerContentPanel for clarity in this context
+        JPanel centerContentPanel = new JPanel();
         centerContentPanel.setOpaque(false);
         centerContentPanel.setLayout(new BoxLayout(centerContentPanel, BoxLayout.Y_AXIS));
         centerContentPanel.add(messageLabel);
@@ -151,7 +141,6 @@ public class WelcomeScreen extends JFrame {
         centerContentPanel.add(modeSelectionPanel); // Add mode selection panel directly to centerContentPanel
         centerContentPanel.add(Box.createRigidArea(new Dimension(0, 40))); // Add spacing below buttons
 
-        // No dynamic input panel anymore, so directly add centerContentPanel to mainPanel
         mainPanel.add(centerContentPanel, BorderLayout.CENTER);
 
         // Set initial selection
@@ -171,27 +160,16 @@ public class WelcomeScreen extends JFrame {
         startGameButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Set the selected mode in GameMain
-                GameMain.currentGameMode = selectedGameMode;
+                // Stop audio when welcome screen moves to next stage
+                stopBackgroundAudio();
 
-                // Player names are now default in GameMain, no user input
-                // GameMain.player1Name = player1NameField.getText().trim(); (REMOVED)
-                // GameMain.player2Name = player2NameField.getText().trim(); (REMOVED)
-                // GameMain.userName = userNameField.getText().trim(); (REMOVED)
+                // --- KOREKSI DI SINI: Luncurkan PlayerNameInputScreen ---
+                // Menggunakan 'WelcomeScreen.this' sebagai owner untuk dialog modal
+                PlayerNameInputScreen nameInputScreen = new PlayerNameInputScreen(WelcomeScreen.this, selectedGameMode);
+                nameInputScreen.setVisible(true); // Menampilkan dialog
 
-                stopBackgroundAudio(); // Stop audio when game starts
-                dispose(); // Close the welcome screen
-
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        JFrame frame = new JFrame(GameMain.TITLE);
-                        frame.setContentPane(new GameMain());
-                        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                        frame.pack();
-                        frame.setLocationRelativeTo(null);
-                        frame.setVisible(true);
-                    }
-                });
+                // WelcomeScreen akan menutup setelah PlayerNameInputScreen selesai
+                dispose();
             }
         });
 
@@ -225,18 +203,18 @@ public class WelcomeScreen extends JFrame {
         button.setPreferredSize(new Dimension(220, 60)); // Larger mode button size
     }
 
-    /** Handles mode selection and updates button appearance. (No name input logic) */
+    /** Handles mode selection and updates button appearance. */
     private void selectMode(GameMode mode) {
         selectedGameMode = mode;
 
         // Reset all buttons to default style
         pvPModeButton.setBackground(COLOR_BUTTON_BG);
         pvPModeButton.setBorder(new LineBorder(COLOR_BUTTON_BORDER, 2, true));
-        pvPModeButton.setForeground(Color.WHITE); // Changed to WHITE
+        pvPModeButton.setForeground(Color.WHITE);
 
         pvCModeButton.setBackground(COLOR_BUTTON_BG);
         pvCModeButton.setBorder(new LineBorder(COLOR_BUTTON_BORDER, 2, true));
-        pvCModeButton.setForeground(Color.WHITE); // Changed to WHITE
+        pvCModeButton.setForeground(Color.WHITE);
 
         // Apply selected style to the chosen button
         if (selectedGameMode == GameMode.PLAYER_VS_PLAYER) {
@@ -248,19 +226,7 @@ public class WelcomeScreen extends JFrame {
             pvCModeButton.setBorder(new LineBorder(COLOR_BUTTON_SELECTED_BG.darker(), 3, true));
             pvCModeButton.setForeground(Color.WHITE); // Text color for selected button
         }
-        // Input panel visibility logic (REMOVED)
     }
-
-    /** Helper method to create styled JLabels (REMOVED as no longer needed for input fields)
-     private JLabel createLabel(String text) {
-     JLabel label = new JLabel(text, SwingConstants.CENTER);
-     label.setFont(FONT_MESSAGE.deriveFont(Font.BOLD, 16));
-     label.setForeground(COLOR_TEXT);
-     label.setOpaque(false);
-     label.setAlignmentX(Component.CENTER_ALIGNMENT);
-     return label;
-     }
-     */
 
     /** Plays the background audio in a loop. */
     private void playBackgroundAudio() {
