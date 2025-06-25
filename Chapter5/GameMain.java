@@ -121,8 +121,9 @@ public class GameMain extends JPanel {
 
     /** Performs the computer's move (simple AI). */
     private void performComputerMove() {
-        // Only make a move if it's the computer's turn and the game is still playing
-        if (currentState != State.PLAYING || currentPlayer != Seed.NOUGHT) {
+        // Hanya bergerak jika giliran komputer dan game masih berjalan
+        // PERBAIKAN: Ubah kondisi currentPlayer != Seed.NOUGHT menjadi currentPlayer == Seed.CROSS
+        if (currentState != State.PLAYING || currentPlayer == Seed.CROSS) {
             return;
         }
 

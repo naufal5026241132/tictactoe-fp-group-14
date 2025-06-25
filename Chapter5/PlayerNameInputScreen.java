@@ -107,6 +107,8 @@ public class PlayerNameInputScreen extends JDialog {
                 if (GameMain.player2Name.isEmpty()) GameMain.player2Name = "Player 2";
                 if (GameMain.userName.isEmpty()) GameMain.userName = "You";
 
+                // PERBAIKAN: Tambahkan baris berikut untuk mengatur currentGameMode di GameMain
+                GameMain.currentGameMode = gameMode;
 
                 dispose(); // Close this dialog
 
