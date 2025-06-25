@@ -128,13 +128,6 @@ public class GameMain extends JPanel {
 
         int bestRow = -1, bestCol = -1;
 
-        // AI Strategy (simple, but effective for Tic-Tac-Toe):
-        // 1. Try to win
-        // 2. Block opponent's winning move
-        // 3. Take the center
-        // 4. Take a corner
-        // 5. Take any available cell
-
         // Try to win or block opponent
         for (int i = 0; i < 2; i++) { // i=0 for current player (computer), i=1 for opponent
             Seed checkSeed = (i == 0) ? currentPlayer : (currentPlayer == Seed.CROSS ? Seed.NOUGHT : Seed.CROSS);
