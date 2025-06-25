@@ -9,15 +9,15 @@ import javax.swing.ImageIcon;
  * 2. Cell content: takes value of CROSS, NOUGHT, or NO_SEED.
  *
  * We also attach a display image icon (text or image) for the items.
- *   and define the related variable/constructor/getter.
+ * and define the related variable/constructor/getter.
  * To draw the image:
- *   g.drawImage(content.getImage(), x, y, width, height, null);
+ * g.drawImage(content.getImage(), x, y, width, height, null);
  *
  * Ideally, we should define two enums with inheritance, which is,
- *  however, not supported.
+ * however, not supported.
  */
 public enum Seed {   // to save as "Seed.java"
-    CROSS("X", "images/cross.gif"),   // displayName, imageFilename
+    CROSS("X", "images/cross.gif"),   // Display name, image filename
     NOUGHT("O", "images/not.gif"),
     NO_SEED(" ", null);
 
@@ -30,13 +30,15 @@ public enum Seed {   // to save as "Seed.java"
         this.displayName = name;
 
         if (imageFilename != null) {
+            // Use getResourceAsStream for better JAR file handling
+            // Or getClass().getClassLoader().getResource for relative paths
             URL imgURL = getClass().getClassLoader().getResource(imageFilename);
             ImageIcon icon = null;
             if (imgURL != null) {
                 icon = new ImageIcon(imgURL);
                 //System.out.println(icon);  // debugging
             } else {
-                System.err.println("Couldn't find file " + imageFilename);
+                System.err.println("Couldn't find file " + imageFilename + ". Make sure 'images' folder is in the classpath.");
             }
             img = icon.getImage();
         }

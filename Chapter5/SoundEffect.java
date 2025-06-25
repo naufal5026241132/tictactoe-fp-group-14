@@ -13,9 +13,9 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * 1. Define all your sound effect names and the associated wave file.
  * 2. To play a specific sound, simply invoke SoundEffect.SOUND_NAME.play().
  * 3. You might optionally invoke the static method SoundEffect.initGame() to pre-load all the
- *    sound files, so that the play is not paused while loading the file for the first time.
+ * sound files, so that the play is not paused while loading the file for the first time.
  * 4. You can the static variable SoundEffect.volume to SoundEffect.Volume.MUTE
- *    to mute the sound.
+ * to mute the sound.
  *
  * For Eclipse, place the audio file under "src", which will be copied into "bin".
  */

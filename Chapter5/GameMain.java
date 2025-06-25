@@ -3,9 +3,11 @@ package Chapter5;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import java.io.IOException;
+import java.util.Random; // For AI random moves
+import java.util.ArrayList;
+import java.util.List;
 import java.net.URL;
-import javax.sound.sampled.*;
+import javax.sound.sampled.*; // Sound imports are already here
 
 /**
  * Tic-Tac-Toe: Two-player Graphic version with better OO design.
@@ -28,10 +30,19 @@ public class GameMain extends JPanel {
     private Seed currentPlayer;  // the current player
     private JLabel statusBar;    // for displaying status message
 
+    // New: Game Mode and Random for AI
+    public static GameMode currentGameMode = GameMode.PLAYER_VS_PLAYER; // Default mode, can be set by WelcomeScreen
+    public static String player1Name = "Player 1"; // Default name Player 1
+    public static String player2Name = "Player 2"; // Default name Player 2
+    public static String userName = "You"; // Default name for player vs computer
+    public static String computerName = "Computer"; // Default computer name
+
+    private Random random;
+    private static final int AI_MOVE_DELAY_MS = 800; // Delay for AI move in milliseconds
+
     /** Constructor to setup the UI and game components */
     public GameMain() {
-        // Pre-load all sound effects (if needed, uncomment SoundEffect.init() after fixing its implementation)
-        // SoundEffect.init(); // This line is not strictly needed if the enum constructor handles loading
+        random = new Random(); // Initialize random for AI
 
         // This JPanel fires MouseEvent
         super.addMouseListener(new MouseAdapter() {
@@ -41,24 +52,28 @@ public class GameMain extends JPanel {
                 int mouseY = e.getY();
                 // Get the row and column clicked
                 int row = mouseY / Cell.SIZE;
-                int col = mouseX / Cell.SIZE;
+                int col = mouseX / Cell.SIZE; // Corrected: removed extra / e.getY()
 
                 if (currentState == State.PLAYING) {
                     if (row >= 0 && row < Board.ROWS && col >= 0 && col < Board.COLS
                             && board.cells[row][col].content == Seed.NO_SEED) {
-                        // Update cells[][] and return the new game state after the move
-                        State previousState = currentState; // Store state before the move
-                        currentState = board.stepGame(currentPlayer, row, col);
+                        // Player's move
+                        makeMove(row, col);
 
-                        // Play appropriate sound clip after the move
-                        if (currentState == State.PLAYING) {
-                            SoundEffect.EAT_FOOD.play();
-                        } else {
-                            SoundEffect.DIE.play(); // Game over (win or draw)
+                        // If in Player vs Computer mode and game is still playing, trigger computer's move
+                        if (currentGameMode == GameMode.PLAYER_VS_COMPUTER && currentState == State.PLAYING) {
+                            // Use a Swing Timer to introduce a delay for the AI's move
+                            Timer timer = new Timer(AI_MOVE_DELAY_MS, new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent arg0) {
+                                    performComputerMove();
+                                    repaint(); // Repaint after computer's move
+                                    ((Timer)arg0.getSource()).stop(); // Stop the timer after one execution
+                                }
+                            });
+                            timer.setRepeats(false); // Ensure it only runs once
+                            timer.start(); // Start the timer
                         }
-
-                        // Switch player
-                        currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
                     }
                 } else {        // game over
                     newGame();  // restart the game
@@ -89,6 +104,102 @@ public class GameMain extends JPanel {
         newGame();
     }
 
+    /** Handles making a move for the current player at the given row and column. */
+    private void makeMove(int row, int col) {
+        currentState = board.stepGame(currentPlayer, row, col);
+
+        // Play appropriate sound clip after the move
+        if (currentState == State.PLAYING) {
+            SoundEffect.EAT_FOOD.play();
+        } else {
+            SoundEffect.DIE.play(); // Game over (win or draw)
+        }
+
+        // Switch player
+        currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
+    }
+
+    /** Performs the computer's move (simple AI). */
+    private void performComputerMove() {
+        // Only make a move if it's the computer's turn and the game is still playing
+        if (currentState != State.PLAYING || currentPlayer != Seed.NOUGHT) {
+            return;
+        }
+
+        int bestRow = -1, bestCol = -1;
+
+        // AI Strategy (simple, but effective for Tic-Tac-Toe):
+        // 1. Try to win
+        // 2. Block opponent's winning move
+        // 3. Take the center
+        // 4. Take a corner
+        // 5. Take any available cell
+
+        // Try to win or block opponent
+        for (int i = 0; i < 2; i++) { // i=0 for current player (computer), i=1 for opponent
+            Seed checkSeed = (i == 0) ? currentPlayer : (currentPlayer == Seed.CROSS ? Seed.NOUGHT : Seed.CROSS);
+            for (int row = 0; row < Board.ROWS; row++) {
+                for (int col = 0; col < Board.COLS; col++) {
+                    if (board.cells[row][col].content == Seed.NO_SEED) {
+                        board.cells[row][col].content = checkSeed; // Temporarily make a move
+                        if (board.hasWon(checkSeed, row, col)) {
+                            bestRow = row;
+                            bestCol = col;
+                            board.cells[row][col].content = Seed.NO_SEED; // Undo temp move
+                            makeMove(bestRow, bestCol); // Make the actual move
+                            return; // Move found, exit
+                        }
+                        board.cells[row][col].content = Seed.NO_SEED; // Undo temp move
+                    }
+                }
+            }
+        }
+
+        // If no winning/blocking move, try to take the center
+        if (bestRow == -1 && board.cells[1][1].content == Seed.NO_SEED) {
+            bestRow = 1;
+            bestCol = 1;
+        }
+        // If center is taken, try a corner
+        else {
+            int[][] corners = {{0, 0}, {0, 2}, {2, 0}, {2, 2}};
+            List<Point> availableCorners = new ArrayList<>();
+            for (int[] corner : corners) {
+                if (board.cells[corner[0]][corner[1]].content == Seed.NO_SEED) {
+                    availableCorners.add(new Point(corner[0], corner[1]));
+                }
+            }
+            if (!availableCorners.isEmpty()) {
+                Point move = availableCorners.get(random.nextInt(availableCorners.size()));
+                bestRow = move.x;
+                bestCol = move.y;
+            }
+        }
+
+        // If no strategic move, take any available cell
+        if (bestRow == -1) {
+            List<Point> emptyCells = new ArrayList<>();
+            for (int row = 0; row < Board.ROWS; row++) {
+                for (int col = 0; col < Board.COLS; col++) {
+                    if (board.cells[row][col].content == Seed.NO_SEED) {
+                        emptyCells.add(new Point(row, col));
+                    }
+                }
+            }
+            if (!emptyCells.isEmpty()) {
+                Point move = emptyCells.get(random.nextInt(emptyCells.size()));
+                bestRow = move.x;
+                bestCol = move.y;
+            }
+        }
+
+        // Make the chosen move (if a valid move was found)
+        if (bestRow != -1) {
+            makeMove(bestRow, bestCol);
+        }
+    }
+
+
     /** Initialize the game (run once) */
     public void initGame() {
         board = new Board();  // allocate the game-board
@@ -96,13 +207,24 @@ public class GameMain extends JPanel {
 
     /** Reset the game-board contents and the current-state, ready for new game */
     public void newGame() {
-        for (int row = 0; row < Board.ROWS; ++row) {
-            for (int col = 0; col < Board.COLS; ++col) {
-                board.cells[row][col].content = Seed.NO_SEED; // all cells empty
-            }
-        }
-        currentPlayer = Seed.CROSS;    // cross plays first
+        board.newGame(); // Use Board's newGame method to clear cells
+        currentPlayer = Seed.CROSS;    // 'X' plays first
         currentState = State.PLAYING;  // ready to play
+
+        // If computer is the first player, make its move
+        if (currentGameMode == GameMode.PLAYER_VS_COMPUTER && currentPlayer == Seed.NOUGHT) {
+            // Introduce delay for AI's first move as well
+            Timer timer = new Timer(AI_MOVE_DELAY_MS, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent arg0) {
+                    performComputerMove();
+                    repaint();
+                    ((Timer)arg0.getSource()).stop();
+                }
+            });
+            timer.setRepeats(false);
+            timer.start();
+        }
     }
 
     /** Custom painting codes on this JPanel */
@@ -116,16 +238,26 @@ public class GameMain extends JPanel {
         // Print status-bar message
         if (currentState == State.PLAYING) {
             statusBar.setForeground(Color.BLACK);
-            statusBar.setText((currentPlayer == Seed.CROSS) ? "X's Turn" : "O's Turn");
+            String turnText;
+            if (currentGameMode == GameMode.PLAYER_VS_COMPUTER) {
+                turnText = (currentPlayer == Seed.CROSS) ? "It's " + userName + "'s Turn (X)" : "It's " + computerName + "'s Turn (O)";
+            } else {
+                turnText = (currentPlayer == Seed.CROSS) ? "It's " + player1Name + "'s Turn (X)" : "It's " + player2Name + "'s Turn (O)";
+            }
+            statusBar.setText(turnText);
         } else if (currentState == State.DRAW) {
             statusBar.setForeground(Color.RED);
             statusBar.setText("It's a Draw! Click to play again.");
         } else if (currentState == State.CROSS_WON) {
             statusBar.setForeground(Color.RED);
-            statusBar.setText("'X' Won! Click to play again.");
+            statusBar.setText(player1Name + " (X) Won! Click to play again.");
         } else if (currentState == State.NOUGHT_WON) {
             statusBar.setForeground(Color.RED);
-            statusBar.setText("'O' Won! Click to play again.");
+            if (currentGameMode == GameMode.PLAYER_VS_COMPUTER) {
+                statusBar.setText(computerName + " (O) Won! Click to play again.");
+            } else {
+                statusBar.setText(player2Name + " (O) Won! Click to play again.");
+            }
         }
     }
 

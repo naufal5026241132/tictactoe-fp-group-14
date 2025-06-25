@@ -1,6 +1,11 @@
 package Chapter5;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.io.IOException;
+import java.net.URL;
+
 /**
  * The Cell class models each individual cell of the game board.
  */
@@ -34,8 +39,13 @@ public class Cell {
         // Draw the Seed if it is not empty
         int x1 = col * SIZE + PADDING;
         int y1 = row * SIZE + PADDING;
+
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); // Enable anti-aliasing
+
         if (content == Seed.CROSS || content == Seed.NOUGHT) {
-            g.drawImage(content.getImage(), x1, y1, SEED_SIZE, SEED_SIZE, null);
+            // Image loading is handled in Seed enum, so we just draw the image here
+            g2d.drawImage(content.getImage(), x1, y1, SEED_SIZE, SEED_SIZE, null);
         }
     }
 }
